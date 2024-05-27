@@ -1,6 +1,6 @@
 @extends('layouts/contentNavbarLayout')
 
-@section('title', 'Tables - Basic Tables')
+@section('title', 'Reservations')
 
 @section('content')
 <!-- Modal -->
@@ -8,11 +8,11 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title" id="exampleModalLabel1">Add User</h4>
+                <h4 class="modal-title" id="exampleModalLabel1">Add Reservation</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="reserveForm">
+                <form id="reserveForm" action="{{ route('add.reservations') }}">
                     @csrf
                     <input type="hidden" id="user_id" name="user_id" value="{{ auth()->user()->id }}">
                     <div class="row">
@@ -72,7 +72,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary" id="registerclientBtn">Save</button>
+                        <button type="submit" class="btn btn-primary" id="add-reservation-btn">Save</button>
                     </div>
                 </form>
             </div>
@@ -160,51 +160,180 @@
 <h4 class="py-3 mb-4">
     List of Reservations
 </h4>
-<div class="card">
-    <div class="card-datatable table-responsive pt-0">
-        <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper dt-bootstrap5 no-footer">
-            <div class="card-header flex-column flex-md-row">
-                <div class="d-flex justify-content-between mb-2">
-                    <button class="dt-button create-new btn btn-primary" tabindex="0" aria-controls="DataTables_Table_0"
-                        type="button" data-bs-toggle="modal" data-bs-target="#basicModal">
-                        <span>
-                            <i class="mdi mdi-plus me-sm-1"></i>
-                            <span class="d-none d-sm-inline-block">Add Reservation</span>
-                        </span>
-                    </button>
-                    <div class="nav-item d-flex align-items-center">
-                        <i class="mdi mdi-magnify mdi-24px lh-0"></i>
-                        <input type="text" id="searchInput" class="form-control border-2 shadow-none mr-2"
-                            placeholder="Search..." aria-label="Search...">
-                    </div>
-                </div>
-            </div>
-            <div class="card">
-                <div class="table-responsive text-nowrap">
-                    <table class="datatables-basic table table-hover dataTable no-footer dtr-column collapsed"
-                        id="userDataTable">
-                        <thead>
-                            <tr>
-                                <th>Fullname</th>
-                                <th>Email</th>
-                                <th>Contact</th>
-                                <th>Address</th>
-                                <th>Event Package</th>
-                                <th>Date</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Reservation data will be populated here by a script -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+
+<div class="card mb-2">
+    <div class="card-header">
+    <button class="dt-button create-new btn btn-primary" tabindex="0" aria-controls="DataTables_Table_0"
+        type="button" data-bs-toggle="modal" data-bs-target="#basicModal">
+        <span>
+            <i class="mdi mdi-plus me-sm-1"></i>
+            <span class="d-none d-sm-inline-block">Add Reservation</span>
+        </span>
+    </button>
     </div>
+
+    <div class="table-responsive text-nowrap">
+        <table class="datatables-basic table table-hover dataTable no-footer dtr-column collapsed"
+            id="userDataTable">
+            <thead>
+                <tr>
+                    <th>Fullname</th>
+                    <th>Email</th>
+                    <th>Contact</th>
+                    <th>Address</th>
+                    <th>Event Package</th>
+                    <th>Date</th>
+                    <!-- <th>Actions</th> -->
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($reservations as $reservation)
+                    <tr>
+                        <td>{{ $reservation->user->fullname }}</td>
+                        <td>{{ $reservation->user->email }}</td>
+                        <td>{{ $reservation->user->contact }}</td>
+                        <td>{{ $reservation->address }}</td>
+                        <td>
+                            @if($reservation->packages  === 'privateparty')
+                                Private Party
+                            @else
+                                {{ ucwords(strtolower($reservation->packages)) }}
+                            @endif
+                        </td>
+                        <td>{{ $reservation->reservation_date }}</td>
+                        <!-- <td> -->
+                            {{-- @if($reservation->is_confirmed) --}}
+                                <!-- <span class="badge rounded-pill bg-label-success me-1">Confirmed</span> -->
+                            {{-- @else --}}
+                                <!-- <span type="button" data-id="{{ $reservation->id }}" class="confirm-btn btn rounded-pill me-2 btn-primary">Confirm?</span> -->
+                            {{-- @endif --}}
+                        <!-- </td> -->
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+
 </div>
 
-<script src="{{ asset('assets/js/jquery-3.7.1.min.js') }}"></script>
+
+@endsection
+
+@section('page-script')
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="{{ asset('assets/js/add_reserve.js') }}"></script>
+<script>
+
+$(document).ready(function () {
+  $('#reserveForm').submit(function (e) {
+    e.preventDefault();
+
+    let _token = $('input[name="_token"]').val();
+    let user_id = $('#user_id').val();
+    let fullName = $('#fullname').val();
+    let email = $('#email').val();
+    let contact = $('#contact').val();
+    let address = $('#address').val();
+    let package = $('#packages').val();
+    let reservationDate = $('#date').val();
+
+    $.ajax({
+      url: $(this).attr('action'),
+      method: 'post',
+      dataType: 'json',
+      data: { _token, user_id, fullName, email, contact, address, package, reservationDate },
+      beforeSend: () => {
+        $('.is-invalid').removeClass('is-invalid');
+        $('#add-reservation-btn').attr('disabled', true);
+        $('#add-reservation-btn').html(`<span class="spinner-border text-primary"></span Adding...`);
+      },
+      success: response => {
+        $('#add-reservation-btn').attr('disabled', false);
+        $('#add-reservation-btn').html(`SAVE`);
+
+        let package = $('#packages').val('').trigger('change');
+        let reservationDate = $('#date').val('');
+
+        Swal.fire({
+          title: 'Success!',
+          text: 'Reservation saved!',
+          icon: 'success'
+        }).then(result => {
+          window.location.reload();
+        });
+      },
+      error: (jqXHR, textStatus) => {
+        if (jqXHR.status === 422) {
+          let errors = jqXHR.responseJSON?.errors;
+          console.log(jqXHR);
+          Swal.fire({
+            title: 'Error!',
+            text: 'Please fill all required fields!',
+            icon: 'warning'
+          });
+
+          if ('address' in errors) {
+            $('#address').addClass('is-invalid');
+          }
+
+          if ('package' in errors) {
+            $('#packages').addClass('is-invalid');
+          }
+
+          if ('reservationDate' in errors) {
+            $('#date').addClass('is-invalid');
+          }
+        } else if (jqXHR.status === 409) {
+          Swal.fire({
+            title: 'Error!',
+            text: jqXHR.responseJSON?.message,
+            icon: 'warning'
+          });
+        } else {
+          Swal.fire({
+            title: 'Error!',
+            text: 'Unable to create reservation. Please refresh the page and try again.',
+            icon: 'warning'
+          });
+        }
+
+        $('#add-reservation-btn').attr('disabled', false);
+        $('#add-reservation-btn').html(`SAVE`);
+      }
+    });
+  });
+
+  $('.confirm-btn').on('click', function () {
+    let id = $(this).data('id');
+    Swal.fire({
+      title: 'Confirm reservation?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, Approve reservation',
+      cancelButtonText: 'Decline reservation'
+    }).then(result => {
+      if (result.isConfirmed) {
+        // confirm  reservation
+        console.log(id);
+        Swal.fire({
+          title: 'Deleted!',
+          text: 'Your file has been deleted.',
+          icon: 'success'
+        });
+      } else if (result.dismiss === 'cancel') {
+        //decline reservation
+
+        Swal.fire({
+          title: 'Deleted!',
+          text: 'Cancelled.',
+          icon: 'success'
+        });
+      }
+    });
+  });
+});
+
+</script>
 @endsection

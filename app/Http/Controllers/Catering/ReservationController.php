@@ -14,7 +14,10 @@ class ReservationController extends Controller
 {
   public function index()
   {
-    return view('catering.addreservation');
+    $reservations = Reservation::with('user')
+      ->latest()
+      ->get();
+    return view('catering.addreservation', compact('reservations'));
   }
   public function getUserDetails($id)
   {
@@ -36,15 +39,16 @@ class ReservationController extends Controller
     // Validate the incoming request data
     $data = $request->validate([
       'user_id' => 'required|exists:users,id',
-      'packages' => 'required',
-      'date' => 'required|date',
+      'address' => 'required',
+      'package' => 'required',
+      'reservationDate' => 'required|date',
     ]);
 
     // Retrieve user details
     $user = User::select('id', 'fullname', 'email', 'contact')->findOrFail($data['user_id']);
 
     // Check if the date is already reserved
-    $existingReservation = Reservation::where('date', $data['date'])->first();
+    $existingReservation = Reservation::where('date', $request->get('reservationDate'))->first();
 
     if ($existingReservation) {
       return response()->json(['message' => 'The selected date is already reserved. Please choose another date.'], 409);
@@ -52,14 +56,10 @@ class ReservationController extends Controller
 
     // Create a new reservation
     Reservation::create([
-      'transaction_id' => Str::uuid(),
       'user_id' => $user->id,
-      'fullname' => $user->fullname,
-      'email' => $user->email,
-      'contact' => $user->contact,
-      'address' => $data->address,
-      'packages' => $data['packages'],
-      'date' => $data['date'],
+      'address' => $request->get('address'),
+      'packages' => $request->get('package'),
+      'date' => $request->get('reservationDate'),
       'is_confirmed' => false,
     ]);
 

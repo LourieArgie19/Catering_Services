@@ -152,11 +152,7 @@
                             <span class="d-none d-sm-inline-block">Add User</span>
                         </span>
                     </button>
-                    <div class="nav-item d-flex align-items-center">
-                        <i class="mdi mdi-magnify mdi-24px lh-0"></i>
-                        <input type="text" id="searchInput" class="form-control border-2 shadow-none mr-2"
-                            placeholder="Search..." aria-label="Search...">
-                    </div>
+                    
                 </div>
             </div>
             <div class="card">

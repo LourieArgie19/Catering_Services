@@ -1,0 +1,34 @@
+{
+  "menu": [
+    {
+      "url": "/dashboard",
+      "name": "Dashboards",
+      "icon": "menu-icon tf-icons mdi mdi-home-outline",
+      "slug": "dashboard-analytics"
+    },
+    {
+      "url": "/users",
+      "name": "Users",
+      "icon": "mdi mdi-account-outline mdi-36px",
+      "slug": "users",
+      "roles": [
+        "admin"
+      ]
+    },
+    {
+      "url": "/menu",
+      "name": "Menu",
+      "icon": "menu-icon tf-icons mdi mdi-form-select",
+      "slug": "menu"
+    },
+    {
+      "url": "/addreservation",
+      "name": "Reservations List",
+      "icon": "menu-icon tf-icons mdi mdi-file-document-multiple-outline",
+      "slug": "addreservation",
+      "roles": [
+        "admin"
+      ]
+    }
+  ]
+}

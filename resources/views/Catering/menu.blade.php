@@ -18,7 +18,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="reserveForm">
+                <form id="reserveForm" action="{{ route('add.reservations') }}">
                     @csrf
                     <input type="hidden" id="user_id" name="user_id" value="{{ auth()->user()->id }}">
                     <div class="row">
@@ -78,7 +78,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary" id="registerclientBtn">Save</button>
+                        <button type="submit" class="btn btn-primary" id="add-reservation-btn">Save</button>
                     </div>
                 </form>
             </div>
@@ -98,8 +98,8 @@
                     the planning and execution of your event, Choice of complimentary wedding essentials. This package
                     starts at P80,000 only can accommodate 200 people.
                 </p>
-                <button class="dt-button create-new btn btn-primary reserve-btn" data-user-id="{{ auth()->user()->id }}"
-                    type="button" data-bs-toggle="modal" data-bs-target="#basicModal">
+                <button class="dt-button create-new btn btn-primary reserve-btn" data-package="wedding" data-user-id="{{ auth()->user()->id }}"
+                    type="button" >
                     <span>
                         <span class="d-none d-sm-inline-block">Reserve Now</span>
                     </span>
@@ -118,8 +118,8 @@
                     the planning and execution of your event, Choice of complimentary event essentials. This package
                     starts at P60,000 only can accommodate 150 people.
                 </p>
-                <button class="dt-button create-new btn btn-primary reserve-btn" data-user-id="{{ auth()->user()->id }}"
-                    type="button" data-bs-toggle="modal" data-bs-target="#basicModal">
+                <button class="dt-button create-new btn btn-primary reserve-btn" data-package="debut" data-user-id="{{ auth()->user()->id }}"
+                    type="button" >
                     <span>
                         <span class="d-none d-sm-inline-block">Reserve Now</span>
                     </span>
@@ -138,8 +138,8 @@
                     planning and execution of your event. This package starts at P30,000 only can accommodate 100
                     people.
                 </p>
-                <button class="dt-button create-new btn btn-primary reserve-btn" data-user-id="{{ auth()->user()->id }}"
-                    type="button" data-bs-toggle="modal" data-bs-target="#basicModal">
+                <button class="dt-button create-new btn btn-primary reserve-btn" data-package="privateparty" data-user-id="{{ auth()->user()->id }}"
+                    type="button" >
                     <span>
                         <span class="d-none d-sm-inline-block">Reserve Now</span>
                     </span>
@@ -148,5 +148,102 @@
         </div>
     </div>
 </div>
-<script src="{{ asset('assets/js/menu.js') }}"></script>
+@endsection
+
+@section('page-script')
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    
+    $(document).ready(function() {
+        $('.reserve-btn').on('click',  function() {
+            let package = $(this).data('package');
+
+            $('#packages').attr('disabled', true);
+            $('#packages').val(package).trigger('change');
+            $('#basicModal').modal('show');
+        });
+
+
+        $('#reserveForm').submit(function (e) {
+    e.preventDefault();
+
+    let _token = $('input[name="_token"]').val();
+    let user_id = $('#user_id').val();
+    let fullName = $('#fullname').val();
+    let email = $('#email').val();
+    let contact = $('#contact').val();
+    let address = $('#address').val();
+    let package = $('#packages').val();
+    let reservationDate = $('#date').val();
+
+    $.ajax({
+      url: $(this).attr('action'),
+      method: 'post',
+      dataType: 'json',
+      data: { _token, user_id, fullName, email, contact, address, package, reservationDate },
+      beforeSend: () => {
+        $('.is-invalid').removeClass('is-invalid');
+        $('#add-reservation-btn').attr('disabled', true);
+        $('#add-reservation-btn').html(`<span class="spinner-border text-primary"></span Adding...`);
+      },
+      success: response => {
+        $('#add-reservation-btn').attr('disabled', false);
+        $('#add-reservation-btn').html(`SAVE`);
+
+        let package = $('#packages').val('').trigger('change');
+        let reservationDate = $('#date').val('');
+
+        Swal.fire({
+          title: 'Success!',
+          text: 'Reservation saved!',
+          icon: 'success'
+        }).then(result => {
+          window.location.reload();
+        });
+      },
+      error: (jqXHR, textStatus) => {
+        if (jqXHR.status === 422) {
+          let errors = jqXHR.responseJSON?.errors;
+          console.log(jqXHR);
+          Swal.fire({
+            title: 'Error!',
+            text: 'Please fill all required fields!',
+            icon: 'warning'
+          });
+
+          if ('address' in errors) {
+            $('#address').addClass('is-invalid');
+          }
+
+          if ('package' in errors) {
+            $('#packages').addClass('is-invalid');
+          }
+
+          if ('reservationDate' in errors) {
+            $('#date').addClass('is-invalid');
+          }
+        } else if (jqXHR.status === 409) {
+          Swal.fire({
+            title: 'Error!',
+            text: jqXHR.responseJSON?.message,
+            icon: 'warning'
+          });
+        } else {
+          Swal.fire({
+            title: 'Error!',
+            text: 'Unable to create reservation. Please refresh the page and try again.',
+            icon: 'warning'
+          });
+        }
+
+        $('#add-reservation-btn').attr('disabled', false);
+        $('#add-reservation-btn').html(`SAVE`);
+      }
+    });
+  });
+    });
+</script>
+
 @endsection

@@ -206,7 +206,7 @@ a:focus {
 
 .authfy-panel-left .brand-col .headline h1,
 .authfy-panel-left .brand-col .headline h2,
-.authfy-panel-left .brand-col .headline h3,
+.authfy-panel-left .brand-col .headline h3
     {
     color: #fff;
     font-size: 38px;
@@ -584,14 +584,14 @@ a:focus {
                                     <div class="g_id_signin form_control" data-type="standard"></div>
                                 </div><!-- ./social-buttons -->
                                 <div class="danger text-center">
-                                    <p id="error" style="display: ; color:red"></p>
+                                    <p id="error" style=" color:red"></p>
                                     <p id="error-message" style="display:none; color:red"></p>
                                     <p id="error-time" style="display:none; "></p>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-xs-12 col-sm-12">
-                                    <form id="formAuthentication">
+                                    <form id="formAuthentication" method="post" action="{{ route('logoin.post') }}">
                                         @csrf
                                         <div class="form-group">
                                             <input type="email" id="email" class="form-control email" name="email"

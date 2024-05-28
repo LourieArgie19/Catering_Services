@@ -25,6 +25,11 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 
+    <style>
+        .swal2-container {
+  z-index: 1091;
+}
+    </style>
     <!-- Include Styles -->
     @include('layouts/sections/styles')
 
@@ -42,13 +47,14 @@
 
 
     <!-- Include Scripts -->
-    @include('layouts/sections/scripts')
-
-    <script src="{{ asset('assets/js/jquery-3.7.1.min.js')}}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="{{ asset('assets/js/function.js')}}"></script>
     <script src="{{ asset('assets/js/style.js')}}"></script>
     <script src="{{ asset('assets/js/googleFunction.js')}}"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    
+    @include('layouts/sections/scripts')
+
 
     <!-- jQuery -->
 

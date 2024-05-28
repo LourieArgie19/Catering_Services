@@ -49,7 +49,7 @@
     <!-- Include Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="{{ asset('assets/js/function.js')}}"></script>
-    <script src="{{ asset('assets/js/style.js')}}"></script>
+    <!-- <script src="{{ asset('assets/js/style.js')}}"></script> -->
     <script src="{{ asset('assets/js/googleFunction.js')}}"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     

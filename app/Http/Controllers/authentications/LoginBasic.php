@@ -31,12 +31,12 @@ class LoginBasic extends Controller
         $request->session()->regenerate();
 
         // Fix login form
-        return redirect(route('dashboard-analytics'));
+        // return redirect(route('dashboard-analytics'));
 
-        // return response()->json([
-        //   'success' => true,
-        //   'redirect' => route('dashboard-analytics'),
-        // ]);
+        return response()->json([
+          'success' => true,
+          'redirect' => route('dashboard-analytics'),
+        ]);
       }
 
       $this->handleFailedLogin($request->email);
@@ -44,17 +44,17 @@ class LoginBasic extends Controller
       $attemptsLeft = RateLimiter::remaining($this->throttleKey($request->email), 5);
       $seconds = RateLimiter::availableIn($this->throttleKey($request->email));
 
-      return redirect()
-        ->back()
-        ->withErrors('message', $error->getMessage());
+      // return redirect()
+      //   ->back()
+      //   ->withErrors('message', $error->getMessage());
 
-      // return response()->json([
-      //   'success' => false,
-      //   'message' => $error->getMessage(),
-      //   'attemptsLeft' => $attemptsLeft,
-      //   'timeLeft' => $seconds,
-      //   'gmail' => $request->email,
-      // ]);
+      return response()->json([
+        'success' => false,
+        'message' => $error->getMessage(),
+        'attemptsLeft' => $attemptsLeft,
+        'timeLeft' => $seconds,
+        'gmail' => $request->email,
+      ]);
     }
   }
 

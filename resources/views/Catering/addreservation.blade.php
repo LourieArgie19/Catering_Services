@@ -90,11 +90,12 @@
             <div class="modal-body">
                 <form id="updateForm">
                     @csrf
-                    <input type="hidden" id="user_id" name="user_id">
+                    <input type="hidden" id="updateuser_id" name="user_id">
+                    <input type="hidden" id="reservation_id" name="reservation_id">
                     <div class="row">
                         <div class="col mb-4 mt-2">
                             <div class="form-floating form-floating-outline">
-                                <input type="text" id="updateFullname" name="fullname" class="form-control"
+                                <input type="text" readonly id="updateFullname" name="fullname" class="form-control"
                                     placeholder="Enter Fullname">
                                 <label for="Fullname">Fullname</label>
                             </div>
@@ -103,7 +104,7 @@
                     <div class="row g-2">
                         <div class="col mb-4">
                             <div class="form-floating form-floating-outline">
-                                <input type="email" id="updateEmail" name="email" class="form-control"
+                                <input type="email" readonly id="updateEmail" name="email" class="form-control"
                                     placeholder="name@gmail.com">
                                 <label for="emailBasic">Email</label>
                             </div>
@@ -112,7 +113,7 @@
                     <div class="row g-2">
                         <div class="col mb-4">
                             <div class="form-floating form-floating-outline">
-                                <input type="text" id="updateContact" name="contact" class="form-control"
+                                <input type="text" readonly id="updateContact" name="contact" class="form-control"
                                     placeholder="09xxxxxxx">
                                 <label for="Contact">Contact</label>
                             </div>
@@ -183,7 +184,7 @@
                     <th>Address</th>
                     <th>Event Package</th>
                     <th>Date</th>
-                    <!-- <th>Actions</th> -->
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -208,6 +209,24 @@
                                 <!-- <span type="button" data-id="{{ $reservation->id }}" class="confirm-btn btn rounded-pill me-2 btn-primary">Confirm?</span> -->
                             {{-- @endif --}}
                         <!-- </td> -->
+
+                        <td>
+                            <div class="dropdown">
+                                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                    <i class="mdi mdi-dots-vertical"></i>
+                                </button>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item edit-reservation" data-id="{{ $reservation->id }}">
+                                        <i class="mdi mdi-pencil-outline me-1"></i> 
+                                        Edit
+                                    </a>
+                                    <a class="dropdown-item delete-reservation" data-id="{{ $reservation->id }}">
+                                        <i class="mdi mdi-trash-can-outline me-1"></i> 
+                                        Delete
+                                    </a>
+                                </div>
+                            </div>
+                        </td>
                     </tr>
                 @endforeach
             </tbody>
@@ -333,6 +352,156 @@ $(document).ready(function () {
       }
     });
   });
+
+  $('.edit-reservation').on('click', function() {
+    let id = $(this).data('id');
+    let _token = $('input[name="_token"]').val();
+
+    $.ajax({
+            url: `/reservations/${id}`,
+            method: 'get',
+            dataType: 'json',
+            data: {_token},
+            success: response => {
+                console.log(response);
+
+                 $('#reservation_id').val(id);
+                 $('#updateuser_id').val(response.user_id);
+                 $('#updateFullname').val(response.fullname);
+                 $('#updateEmail').val(response.email);
+                 $('#updateContact').val(response.contact);
+                 $('#updateAddress').val(response.address);
+                 $('#updatePackages').val(response.package).trigger('change');
+                 $('#updateDate').val(response.reservationDate);
+
+
+                $('#updateModal').modal('show');
+            },
+            error: (jqXHR, textStatus) => {
+                Swal.fire({
+                    title: 'Error!',
+                    text: jqXHR.responseJSON?.message,
+                    icon: 'warning'
+                });
+            }
+        });
+
+  });
+
+  $('#updateForm').on('submit', function(e) {
+    e.preventDefault();
+    let id = $('#reservation_id').val();
+
+    let user_id = $('#updateuser_id').val();
+    let address = $('#updateAddress').val();
+    let package = $('#updatePackages').val();
+    let reservationDate = $('#updateDate').val();
+
+    let _token = $('input[name="_token"]').val();
+
+    $.ajax({
+      url: `/reservations/${id}`,
+      method: 'put',
+      dataType: 'json',
+      data: { _token, user_id, address, package, reservationDate },
+      beforeSend: () => {
+        $('.is-invalid').removeClass('is-invalid');
+        $('#updateUserBtn').attr('disabled', true);
+        $('#updateUserBtn').html(`<span class="spinner-border text-primary"></span Updating...`);
+      },
+      success: response => {
+        $('#updateUserBtn').attr('disabled', false);
+        $('#updateUserBtn').html(`UPDATE`);
+       
+        Swal.fire({
+          title: 'Success!',
+          text: 'Reservation successfully updated!',
+          icon: 'success'
+        }).then(result => {
+          window.location.reload();
+        });
+      },
+      error: (jqXHR, textStatus) => {
+        if (jqXHR.status === 422) {
+          let errors = jqXHR.responseJSON?.errors;
+          
+          Swal.fire({
+            title: 'Error!',
+            text: 'Please fill all required fields!',
+            icon: 'warning'
+          });
+
+          if ('address' in errors) {
+            $('#address').addClass('is-invalid');
+          }
+
+          if ('package' in errors) {
+            $('#packages').addClass('is-invalid');
+          }
+
+          if ('reservationDate' in errors) {
+            $('#date').addClass('is-invalid');
+          }
+        } else if (jqXHR.status === 409) {
+          Swal.fire({
+            title: 'Error!',
+            text: jqXHR.responseJSON?.message,
+            icon: 'warning'
+          });
+        } else {
+          Swal.fire({
+            title: 'Error!',
+            text: 'Unable to update reservation. Please refresh the page and try again.',
+            icon: 'warning'
+          });
+        }
+
+        $('#updateUserBtn').attr('disabled', false);
+        $('#updateUserBtn').html(`UPDATE`);
+      }
+    });
+  })
+
+  $('.delete-reservation').on('click', function() {
+    let id = $(this).data('id');
+    let _token = $('input[name="_token"]').val();
+
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!',
+    }).then(result => {
+      if (result.isConfirmed) {
+        // confirm  reservation
+        $.ajax({
+            url: `/reservations/${id}`,
+            method: 'delete',
+            dataType: 'json',
+            data: {_token},
+            success: response => {
+                Swal.fire({
+                    title: 'Deleted!',
+                    text: 'Reservation successfully deleted!',
+                    icon: 'success'
+                }).then(result => {
+                    window.location.reload();
+                });
+            },
+            error: (jqXHR, textStatus) => {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Unable to delete reservation. Please refresh the page and try again.',
+                    icon: 'warning'
+                });
+            }
+        });
+      }
+    });
+  });
+
 });
 
 </script>

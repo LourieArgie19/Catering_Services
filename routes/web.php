@@ -66,9 +66,17 @@ Route::group(['middleware' => 'auth'], function () {
 
   Route::get('/addreservation', [ReservationController::class, 'index'])->name('view.reservations');
   Route::post('/reservations', [ReservationController::class, 'store'])->name('add.reservations');
+  Route::get('fetchReservations', [ReservationController::class, 'fetchReservations']);
+  Route::get('reservations/{id}', [ReservationController::class, 'getReservation']);
+  Route::put('reservations/{id}', [ReservationController::class, 'update']);
+  Route::delete('reservations/{id}', [ReservationController::class, 'destroy'])->name('delete.reservation');
 
   Route::get('/users', [UserController::class, 'index'])->name('users');
   Route::post('/store-user', [UserController::class, 'saveusers'])->name('store-user');
+  Route::get('/fetchUser', [UserController::class, 'fetchUser'])->name('fetchUser');
+  Route::put('/update-user/{id}', [UserController::class, 'updateUser'])->name('updateUser');
+  Route::get('/edit-user/{id}', [UserController::class, 'getUser'])->name('edit-User');
+  Route::delete('/delete-user/{id}', [UserController::class, 'destroy'])->name('delete-User');
 
   //menu
   Route::get('/menu', [MenuController::class, 'index'])->name('menu');
@@ -79,15 +87,6 @@ Route::group(['middleware' => 'auth'], function () {
 
 // Route::middleware('auth')->group(function () {
 
-//   Route::get('/fetchUser', [UserController::class, 'fetchUser'])->name('fetchUser');
-//   Route::put('/update-user/{id}', [UserController::class, 'updateUser'])->name('updateUser');
-//   Route::get('/edit-user/{id}', [UserController::class, 'getUser'])->name('edit-User');
-//   Route::delete('/delete-user/{id}', [UserController::class, 'destroy'])->name('delete-User');
-
 //   //add reservation
 
-//   //Route::get('fetchReservations', [ReservationController::class, 'fetchReservations']);
-//   //Route::get('reservations/{id}', [ReservationController::class, 'getUserDetails']);
-//   //Route::put('reservations/{id}', [ReservationController::class, 'update']);
-//   //Route::delete('reservations/{id}', [ReservationController::class, 'destroy']);
 // });

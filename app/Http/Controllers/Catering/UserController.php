@@ -69,7 +69,7 @@ class UserController extends Controller
       'email' => 'required|unique:users,email,' . $id,
       'contact' => 'required',
       'role' => 'required|in:user,admin',
-      'password' => 'required|min:5|max:8',
+      'password' => 'required|min:5',
     ]);
 
     // Find the user by ID
